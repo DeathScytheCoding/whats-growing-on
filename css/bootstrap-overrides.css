@@ -1,4 +1,16 @@
+@media (max-width: 767.98px) {
+  .mx-w-100 {
+    width: 100% !important;
+  }
+}
+
 .active
 {
     color: #22FF22 !important;
+}
+
+.card_img
+{
+  max-height: 300px;
+  object-fit: cover;
 }
