@@ -4,13 +4,24 @@
   }
 }
 
-.active
+.nav-link.active
 {
     color: #22FF22 !important;
+}
+
+.list-group-item.active:hover
+{
+  background-color: #0d62e0;
 }
 
 .card_img
 {
   max-height: 300px;
   object-fit: cover;
+}
+
+.todo-list
+{
+  background-color: #FAF9F6;
+  max-width: 40%;
 }
