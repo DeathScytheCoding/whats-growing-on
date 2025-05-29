@@ -17,7 +17,7 @@
   <body>
     <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
       <div class="container-fluid">
-        <a class="navbar-brand" href="index.html">
+        <a class="navbar-brand" href="index.php">
           <img src="imgs/logo-with-copyright.png" alt="Logo" width="28" height="28" class="d-inline-block align-text-top">
           What's Growing On?
         </a>
@@ -27,27 +27,27 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" href="index.html">Home</a>
+              <a class="nav-link" href="index.php">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="todo.html">To-Do</a>
+              <a class="nav-link" href="todo.php">To-Do</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="weather.html">Weather</a>
+              <a class="nav-link" href="weather.php">Weather</a>
             </li>
             <li class="nav-item">
               <a class="nav-link active" aria-current="page" href="">Calendar</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="plants.html">Plants</a>
+              <a class="nav-link" href="plants.php">Plants</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="locations.html">Locations</a>
+              <a class="nav-link" href="locations.php">Locations</a>
             </li>
           </ul>
           <ul class="navbar-nav mr-0 mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" href="settings.html">Settings</a>
+              <a class="nav-link" href="settings.php">Settings</a>
             </li>
           </ul>
         </div>

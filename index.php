@@ -1,3 +1,50 @@
+<?php
+	class whatsGrowingDB extends SQLite3 {
+      function __construct() {
+         $this->open('../data/whats-growing-on.db');
+      }
+	}
+
+	$db = new whatsGrowingDB();
+	if(!$db) {
+	  echo $db->lastErrorMsg();
+	} else {
+	  print( "Opened database successfully\n");
+	}
+
+	$sql =<<<EOF
+		CREATE TABLE IF NOT EXISTS locations (
+			loc_id INTEGER PRIMARY KEY,
+			loc_name TEXT NOT NULL
+		);
+
+		CREATE TABLE IF NOT EXISTS plants (
+		  plant_id integer PRIMARY KEY,
+		  plant_name varchar,
+		  plant_desc varchar,
+		  plant_img varchar,
+		  plant_color varchar(7),
+		  plant_loc integer
+		);
+
+		CREATE TABLE IF NOT EXISTS tasks (
+		  task_id integer primary key,
+		  task_name varchar,
+		  task_desc varchar,
+		  task_anch bool,
+		  task_due datetime
+		);
+	EOF;
+
+   $ret = $db->exec($sql);
+   if(!$ret){
+      echo $db->lastErrorMsg();
+   } else {
+      echo "Table created successfully\n";
+   }
+   $db->close();
+?>
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -29,24 +76,24 @@
               <a class="nav-link active" aria-current="page" href="">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="todo.html">To-Do</a>
+              <a class="nav-link" href="todo.php">To-Do</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="weather.html">Weather</a>
+              <a class="nav-link" href="weather.php">Weather</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="calendar.html">Calendar</a>
+              <a class="nav-link" href="calendar.php">Calendar</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="plants.html">Plants</a>
+              <a class="nav-link" href="plants.php">Plants</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="locations.html">Locations</a>
+              <a class="nav-link" href="locations.php">Locations</a>
             </li>
           </ul>
           <ul class="navbar-nav mr-0 mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" href="settings.html">Settings</a>
+              <a class="nav-link" href="settings.php">Settings</a>
             </li>
           </ul>
         </div>
