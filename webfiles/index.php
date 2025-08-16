@@ -4,6 +4,10 @@
          $this->open('../data/whats-growing-on.db');
       }
 	}
+	
+	//$databaseFile = '../data/whats-growing-on.db';
+	
+	//$db = new SQLite3($databaseFile);
 
 	$db = new whatsGrowingDB();
 	if(!$db) {
