@@ -1,4 +1,6 @@
 <?php
+	//Open db file and make sure all tables are created
+	
 	class whatsGrowingDB extends SQLite3 {
       function __construct() {
          $this->open('../data/whats-growing-on.db');

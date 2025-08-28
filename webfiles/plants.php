@@ -1,69 +1,145 @@
 <?php
-$newPlantPage = <<<HTML
+//Open db file and make sure all tables are created
+	
+	class whatsGrowingDB extends SQLite3 {
+      function __construct() {
+         $this->open('../data/whats-growing-on.db');
+      }
+	}
+	
+	//$databaseFile = '../data/whats-growing-on.db';
+	
+	//$db = new SQLite3($databaseFile);
 
-  <h1 class="text-center mt-3 mb-3">Create New Plant</h1>
-  <div class="mb-3">
-    <label for="formPlantName" class="form-label">Plant Name:</label>
-    <input type="email" class="form-control" id="formPlantName" placeholder="Spinach">
-  </div>
-  <div class="mb-3">
-    <label for="formPlantDescription" class="form-label">Plant Description:</label>
-    <textarea class="form-control" placeholder="Our spinach is planted in the middle of our raised bed. It is a hybrid and requires watering twice a week." id="formPlantDescription" rows="3"></textarea>
-  </div>
-  <div class="mb-3">
-    <label for="formPlantImg" class="form-label">Plant Image:</label>
-    <input class="form-control" type="file" id="formPlantImg">
-  </div>
-  <div class=mb-3>
-    <label for="formPlantColor" class="form-label">Choose ID Color</label>
-    <input type="color" class="form-control form-control-color" id="formPlantColor" value="#563d7c" title="Choose your color">
-  </div>
-  <div>
-    <div class="row">
-      <label for="plantLocDatalist" class="form-label">Locations</label>
-    </div>
-    <div class="row">
-      <div class="col">
-        <input class="form-control" list="locDatalistOptions" id="plantLocDatalist" placeholder="Type to search...">
-        <datalist id="locDatalistOptions">
-          <option value="Raised Bed #1">
-          <option value="Raised Bed #2">
-          <option value="Indoor Planter">
-          <option value="Front Yard">
-          <option value="West Yard">
-        </datalist>
-      </div>
-      <div class="col-2">
-        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newLocModal">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
-            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-    <div class="modal fade" id="newLocModal" tabindex="-1" role="dialog" aria-labelledby="newLocModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="newLocModalLabel">Add New Location</h5>
-          </div>
-          <div class="modal-body">
-            <form method="post" id="newLocForm">
-              <div class="form-group">
-                <label for="formLocName">Location Name</label>
-                <input type="text" class="form-control" id="formLocName" placeholder="i.e. Backyard, Raised Bed, Indoor Planter">
-              </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" id="newLocSubmit" class="btn btn-success">Add</button>
-          </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-HTML;
+	$db = new whatsGrowingDB();
+	if(!$db) {
+	  echo $db->lastErrorMsg();
+	} else {
+	  print( "Opened database successfully\n");
+	}
+
+	$sql =<<<EOF
+		CREATE TABLE IF NOT EXISTS locations (
+			loc_id INTEGER PRIMARY KEY,
+			loc_name TEXT NOT NULL
+		);
+
+		CREATE TABLE IF NOT EXISTS plants (
+		  plant_id integer PRIMARY KEY,
+		  plant_name varchar,
+		  plant_desc varchar,
+		  plant_img varchar,
+		  plant_color varchar(7),
+		  plant_loc integer
+		);
+
+		CREATE TABLE IF NOT EXISTS tasks (
+		  task_id integer primary key,
+		  task_name varchar,
+		  task_desc varchar,
+		  task_anch bool,
+		  task_due datetime
+		);
+	EOF;
+
+   $ret = $db->exec($sql);
+   if(!$ret){
+      echo $db->lastErrorMsg();
+   } else {
+      echo "Table created successfully\n";
+   }
+   
+   $db->close();
+
+	function showNewPlantPage() {
+		
+	?>
+	<h1 class="text-center mt-3 mb-3">Create New Plant</h1>
+	<div class="mb-3">
+	<label for="formPlantName" class="form-label">Plant Name:</label>
+	<input type="email" class="form-control" id="formPlantName" placeholder="Spinach">
+	</div>
+	<div class="mb-3">
+	<label for="formPlantDescription" class="form-label">Plant Description:</label>
+	<textarea class="form-control" placeholder="Our spinach is planted in the middle of our raised bed. It is a hybrid and requires watering twice a week." id="formPlantDescription" rows="3"></textarea>
+	</div>
+	<div class="mb-3">
+	<label for="formPlantImg" class="form-label">Plant Image:</label>
+	<input class="form-control" type="file" id="formPlantImg">
+	</div>
+	<div class=mb-3>
+	<label for="formPlantColor" class="form-label">Choose ID Color</label>
+	<input type="color" class="form-control form-control-color" id="formPlantColor" value="#563d7c" title="Choose your color">
+	</div>
+	<div>
+		<div class="row">
+		  <label for="plantLocDatalist" class="form-label">Locations (click box and select from list or add with plus button)</label>
+		</div>
+		<div class="row">
+		  <div class="col">
+			<input class="form-control" list="locDatalistOptions" id="plantLocDatalist" placeholder="Type to search...">
+			<datalist id="locDatalistOptions">
+				<?php
+				$dbFile = '../data/whats-growing-on.db';
+				$con = "sqlite:$dbFile";
+				
+				try {
+					$pdo = new PDO($con);
+					$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+					echo "Database file opened successfully!";
+				} catch (PDOException $e)
+				{
+					echo "Error opening database: " . $e->getMessage();
+				}
+				
+				$results = $pdo->query("SELECT * FROM locations ORDER BY loc_name ASC");
+				
+				while($row = $results->fetch(PDO::FETCH_ASSOC))
+				{
+					$item = htmlspecialchars($row['loc_name']);
+					echo "<option value='{$item}'>";
+				}
+				?>
+			  <option value="Raised Bed #1">
+			  <option value="Raised Bed #2">
+			  <option value="Indoor Planter">
+			  <option value="Front Yard">
+			  <option value="West Yard">
+			</datalist>
+		  </div>
+		  <div class="col-2">
+			<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newLocModal">
+			  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+				<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+			  </svg>
+			</button>
+		  </div>
+		</div>
+		<div class="modal fade" id="newLocModal" tabindex="-1" role="dialog" aria-labelledby="newLocModalLabel" aria-hidden="true">
+		  <div class="modal-dialog" role="document">
+			<div class="modal-content">
+			  <div class="modal-header">
+				<h5 class="modal-title" id="newLocModalLabel">Add New Location</h5>
+			  </div>
+			  <div class="modal-body">
+				<form method="post" id="newLocForm">
+				  <div class="form-group">
+					<label for="formLocName">Location Name</label>
+					<input type="text" class="form-control" id="formLocName" placeholder="i.e. Backyard, Raised Bed, Indoor Planter">
+				  </div>
+			  </div>
+			  <div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+				<button type="submit" id="newLocSubmit" class="btn btn-success">Add</button>
+			  </div>
+			  </form>
+			</div>
+		  </div>
+		</div>
+	</div>
+	<?php
+	}
+	
 ?>
 
 <!doctype html>
@@ -229,9 +305,10 @@ HTML;
           <?php
             if(isset($_GET['plantId']) && $_GET['plantId'] == 'new')
             {
-              echo $newPlantPage;
+				showNewPlantPage();
             }
-           ?>
+           ?>	
+		   
         </div>
       </div>
     </div>
@@ -255,6 +332,8 @@ HTML;
               // Handle the server's response (e.g., display a message)
               $('#message').html(response);
               alert(response);
+			  // Reload the page after user closes alert box to reload results in location search box
+			  location.reload();
             },
             error: function(error) {
               // Handle errors
