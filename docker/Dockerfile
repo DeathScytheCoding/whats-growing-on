@@ -1,33 +1,37 @@
-# Use a base image with PHP and Apache pre-installed
-FROM php:8.3-apache
+# Base image with PHP & Apache
+FROM php:8.2-apache
 
-# Install SQLite and the PDO SQLite extension for PHP
-RUN apt-get update && \
-    apt-get install -y sqlite3 libsqlite3-dev && \
-    docker-php-ext-install pdo_sqlite
+WORKDIR /var/www/html
 
-# Enable the Apache rewrite module
+# Enable mod_rewrite for PHP
 RUN a2enmod rewrite
 
-# Update the default Apache configuration to allow .htaccess overrides
-# This allows rewrite rules defined in .htaccess files to be effective.
-RUN echo '<Directory /var/www/html>' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '  AllowOverride All' >> /etc/apache2/sites-available/000-default.conf && \
-    echo '</Directory>' >> /etc/apache2/sites-available/000-default.conf
+# Install PHP extensions
+RUN apt-get update && apt-get install -y \
+        libsqlite3-dev \
+        unzip \
+        git \
+    && docker-php-ext-install pdo pdo_sqlite \
+    && docker-php-ext-enable pdo_sqlite \
+    && rm -rf /var/lib/apt/lists/*
 
-# Remove the default index.html file that comes with Apache
-#RUN rm /var/www/html/index.html
+# Copy app code
+COPY public/ /var/www/html/
+COPY src/ /var/www/html/src/
 
-# Copy your application files into the document root
-COPY ./webfiles/ /var/www/html/
+# Create data folder
+RUN mkdir -p /var/www/html/data
 
-RUN mkdir /var/www/data
-RUN chmod 777 /var/www/data
+# Create uploads folder
+RUN mkdir -p /var/www/html/uploads
 
-# Expose port 80 for the web server
-EXPOSE 80
+# Copy entrypoint
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# The base image already handles the Apache foreground process,
-# so a separate CMD instruction is often not needed.
-# If you encounter issues, you might need to add:
-# CMD ["apache2ctl", "-D", "FOREGROUND"]
+# Expose custom port
+EXPOSE 13420
+
+# Start app
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["apache2-foreground"]
