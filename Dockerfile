@@ -1,37 +1,53 @@
-# Use a base image with PHP and Apache pre-installed
+# Base image includes PHP and Apache
 FROM php:8.3-apache
 
-# Install SQLite and the PDO SQLite extension for PHP
+# Install SQLite and PHP's PDO SQLite extension
 RUN apt-get update && \
     apt-get install -y sqlite3 libsqlite3-dev && \
-    docker-php-ext-install pdo_sqlite
+    docker-php-ext-install pdo_sqlite && \
+    rm -rf /var/lib/apt/lists/*
 
-# Enable the Apache rewrite module
+# Enable Apache rewrite module
 RUN a2enmod rewrite
 
-# Update the default Apache configuration to allow .htaccess overrides
-# This allows rewrite rules defined in .htaccess files to be effective.
+# Allow .htaccess overrides so rewrite rules are honored
 RUN echo '<Directory /var/www/html>' >> /etc/apache2/sites-available/000-default.conf && \
     echo '  AllowOverride All' >> /etc/apache2/sites-available/000-default.conf && \
     echo '</Directory>' >> /etc/apache2/sites-available/000-default.conf
 
-# Remove the default index.html file that comes with Apache
+# Optional: remove the default Apache index.html
 #RUN rm /var/www/html/index.html
 
-# Copy your application files into the document root
+# Application files
 COPY public/ /var/www/html/
 COPY src/ /var/www/html/backend
 
-# Create writable folders and set perms
-RUN mkdir -p /app/data /app/uploads
-RUN chmod 777 /app/data
-RUN chmod 777 /app/uploads
-RUN chown -R www-data:www-data /var/www/html
+# Create a non-root user/group for Apache (uid/gid 1000)
+RUN groupadd -g 1000 wgo && \
+    useradd -u 1000 -g 1000 -s /usr/sbin/nologin -d /home/wgo -m wgo
 
-# Expose port 80 for the web server
-EXPOSE 80
+# Create app data directories and set ownership
+RUN mkdir -p /app/data /app/uploads && \
+    chmod 755 /app/data /app/uploads && \
+    chown -R wgo:wgo /var/www/html /app/data /app/uploads
 
-# The base image already handles the Apache foreground process,
-# so a separate CMD instruction is often not needed.
-# If you encounter issues, you might need to add:
+# Ensure Apache runtime paths are writable by the non-root user
+RUN chown -R wgo:wgo /var/run/apache2 /var/lock/apache2 /var/log/apache2
+
+# Run Apache as the non-root user
+ENV APACHE_RUN_USER=wgo \
+    APACHE_RUN_GROUP=wgo
+
+# Listen on an unprivileged port to avoid extra capabilities
+RUN sed -i 's/^Listen 80$/Listen 8080/' /etc/apache2/ports.conf && \
+    sed -i 's/<VirtualHost \*:80>/<VirtualHost *:8080>/' /etc/apache2/sites-available/000-default.conf
+
+# Expose Apache on an unpriveleged port
+EXPOSE 8080
+
+# Change to non-root user
+USER wgo
+
+# The base image already runs Apache in the foreground.
+# If you encounter startup issues, you can add:
 # CMD ["apache2ctl", "-D", "FOREGROUND"]
