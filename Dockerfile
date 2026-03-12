@@ -1,9 +1,9 @@
 # Base image includes PHP and Apache
 FROM php:8.3-apache
 
-# Install SQLite and PHP's PDO SQLite extension
+# Install SQLite, PHP's PDO SQLite extension, and gosu for uid/gid switching
 RUN apt-get update && \
-    apt-get install -y sqlite3 libsqlite3-dev && \
+    apt-get install -y sqlite3 libsqlite3-dev gosu && \
     docker-php-ext-install pdo_sqlite && \
     rm -rf /var/lib/apt/lists/*
 
@@ -46,8 +46,11 @@ RUN sed -i 's/^Listen 80$/Listen 8080/' /etc/apache2/ports.conf && \
 EXPOSE 8080
 
 # Change to non-root user
-USER wgo
+#USER wgo
+
+COPY docker/entrypoint.sh /app/entry.sh
+ENTRYPOINT ["/app/entry.sh"]
 
 # The base image already runs Apache in the foreground.
 # If you encounter startup issues, you can add:
-# CMD ["apache2ctl", "-D", "FOREGROUND"]
+CMD ["apache2ctl", "-D", "FOREGROUND"]
