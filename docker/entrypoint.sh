@@ -18,6 +18,8 @@ if [ "$RUNTIME_UID" = "0" ] || [ "$RUNTIME_UID" != "$CURRENT_UID" ]; then
         exec "$@"
     fi
 
+    echo "Adjusting user $TARGET_USER (uid: $CURRENT_UID) to $PUID and group $TARGET_GROUP (gid: $CURRENT_GID) to $PGID"
+
     if [ "$PGID" != "$CURRENT_GID" ]; then
         groupmod -o -g "$PGID" "$TARGET_GROUP"
     fi

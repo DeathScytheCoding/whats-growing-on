@@ -26,13 +26,10 @@ COPY src/ /var/www/html/backend
 RUN groupadd -g 1000 wgo && \
     useradd -u 1000 -g 1000 -s /usr/sbin/nologin -d /home/wgo -m wgo
 
-# Create app data directories and set ownership
-RUN mkdir -p /app/data /app/uploads && \
-    chmod 755 /app/data /app/uploads && \
-    chown -R wgo:wgo /var/www/html /app/data /app/uploads
-
-# Ensure Apache runtime paths are writable by the non-root user
-RUN chown -R wgo:wgo /var/run/apache2 /var/lock/apache2 /var/log/apache2
+# Create directories and set ownership
+RUN mkdir -p /app/data /app/uploads /var/run/apache2 /var/lock/apache2 /var/log/apache2 && \
+    chmod 755 /app/data /app/uploads /var/run/apache2 /var/lock/apache2 /var/log/apache2 \
+    chown -R wgo:wgo /var/run/apache2 /var/lock/apache2 /var/log/apache2 /app/data /app/uploads
 
 # Run Apache as the non-root user
 ENV APACHE_RUN_USER=wgo \
@@ -51,6 +48,5 @@ EXPOSE 8080
 COPY docker/entrypoint.sh /app/entry.sh
 ENTRYPOINT ["/app/entry.sh"]
 
-# The base image already runs Apache in the foreground.
-# If you encounter startup issues, you can add:
-CMD ["apache2ctl", "-D", "FOREGROUND"]
+# Use the base image launcher (handles Apache envvars/logs correctly).
+#CMD ["apache2-foreground"]
